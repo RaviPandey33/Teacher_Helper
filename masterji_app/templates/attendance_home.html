@@ -1,0 +1,19 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="container mt-5 text-center">
+  <h3>Attendance Dashboard</h3>
+  <p class="text-muted">Choose what you want to do:</p>
+
+  <div class="mt-4 d-grid gap-3 col-6 mx-auto">
+    <a href="{{ url_for('admin.mark_attendance') }}" class="btn btn-primary btn-lg">
+      ➕ Mark Attendance
+    </a>
+    <a href="{{ url_for('admin.view_attendance') }}" class="btn btn-outline-secondary btn-lg">
+      📄 View Attendance
+    </a>
+    <a href="{{ url_for('admin.attendance_by_name') }}" class="btn btn-outline-success btn-lg">
+      👤 Attendance by Name
+    </a>
+  </div>
+</div>
+{% endblock %}

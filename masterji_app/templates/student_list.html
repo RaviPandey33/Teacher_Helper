@@ -1,0 +1,96 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="container mt-5">
+  <h3>All Students</h3>
+
+  <form method="GET" action="{{ url_for('admin.student_list') }}" class="mb-4">
+    <div class="input-group" style="max-width: 400px;">
+      <input type="text" name="q" value="{{ search_query or '' }}" class="form-control" placeholder="Search by parent email or phone">
+      <button class="btn btn-outline-primary" type="submit">Search</button>
+    </div>
+  </form>
+
+  <table class="table table-striped mt-4">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th>Subject</th>
+        <th>Status</th>
+        <th>Joined</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for student in students %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td>{{ student.name }}</td>
+        <td>{{ student.email }}</td>
+        <td>{{ student.phone }}</td>
+        <td>{{ student.learning_subject }}</td>
+        <td>
+          {% if student.status == 'active' %}
+            <span class="badge bg-success">Active</span>
+          {% else %}
+            <span class="badge bg-secondary">Inactive</span>
+          {% endif %}
+        </td>
+        <td>{{ student.date_joined.strftime('%d-%b-%Y') }}</td>
+        <td>
+          <!-- View Details Button -->
+          <button type="button" class="btn btn-sm btn-info mb-1" data-bs-toggle="modal" data-bs-target="#studentModal{{ student.id }}">
+            View Details
+          </button>
+
+          <!-- Modal -->
+          <div class="modal fade" id="studentModal{{ student.id }}" tabindex="-1" aria-labelledby="modalLabel{{ student.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-scrollable">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="modalLabel{{ student.id }}">Details: {{ student.name }}</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  <p><strong>Email:</strong> {{ student.email }}</p>
+                  <p><strong>Phone:</strong> {{ student.student_country_code or '' }} {{ student.phone }}</p>
+                  <p><strong>Subject:</strong> {{ student.learning_subject }}</p>
+                  <p><strong>Gender:</strong> {{ student.gender or 'N/A' }}</p>
+                  <p><strong>Residing Country:</strong> {{ student.residing_country or 'N/A' }}</p>
+                  <hr>
+                  <p><strong>Parent Name:</strong> {{ student.parent_name }}</p>
+                  <p><strong>Parent Email:</strong> {{ student.parent_email }}</p>
+                  <p><strong>Parent Phone:</strong> {{ student.parent_country_code or '' }} {{ student.parent_phone }}</p>
+                  <p><strong>Discord ID:</strong> {{ student.discord_id }}</p>
+                  <p><strong>Sibling Reference:</strong> {{ student.sibling_reference }}</p>
+                  <p><strong>Fee per Month:</strong> ${{ student.fee_per_month }}</p>
+                  <p><strong>Notes:</strong> {{ student.notes }}</p>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {% if student.status == 'active' %}
+            <form method="POST" action="{{ url_for('admin.deactivate_student', student_id=student.id) }}" style="display:inline;">
+              <button type="submit" class="btn btn-sm btn-warning">Mark Inactive</button>
+            </form>
+          {% else %}
+            <form method="POST" action="{{ url_for('admin.activate_student', student_id=student.id) }}" style="display:inline;">
+              <button type="submit" class="btn btn-sm btn-success">Reactivate</button>
+            </form>
+            <form method="POST" action="{{ url_for('admin.delete_student', student_id=student.id) }}" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete {{ student.name }}?');">
+              <button type="submit" class="btn btn-sm btn-outline-danger">🗑 Delete</button>
+            </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,101 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="container mt-5" style="max-width: 700px;">
+  <h3>Add New Student</h3>
+  <form method="POST">
+    {{ form.hidden_tag() }}
+
+    <!-- Name -->
+    <div class="mb-3">
+      {{ form.name.label(class="form-label") }}
+      {{ form.name(class="form-control") }}
+    </div>
+
+    <!-- Residing Country & Gender -->
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        {{ form.residing_country.label(class="form-label") }}
+        {{ form.residing_country(class="form-select") }}
+      </div>
+      <div class="col-md-6 mb-3">
+        {{ form.gender.label(class="form-label") }}
+        {{ form.gender(class="form-select") }}
+      </div>
+    </div>
+
+    <!-- Student Email -->
+    <div class="mb-3">
+      {{ form.email.label(class="form-label") }}
+      {{ form.email(class="form-control") }}
+    </div>
+
+    <!-- Student Phone -->
+    <div class="row">
+      <div class="col-md-4 mb-3">
+        {{ form.student_country_code.label(class="form-label") }}
+        {{ form.student_country_code(class="form-select") }}
+      </div>
+      <div class="col-md-8 mb-3">
+        {{ form.phone.label(class="form-label") }}
+        {{ form.phone(class="form-control") }}
+      </div>
+    </div>
+
+    <!-- Parent Name -->
+    <div class="mb-3">
+      {{ form.parent_name.label(class="form-label") }}
+      {{ form.parent_name(class="form-control") }}
+    </div>
+
+    <!-- Parent Email -->
+    <div class="mb-3">
+      {{ form.parent_email.label(class="form-label") }}
+      {{ form.parent_email(class="form-control") }}
+    </div>
+
+    <!-- Parent Phone -->
+    <div class="row">
+      <div class="col-md-4 mb-3">
+        {{ form.parent_country_code.label(class="form-label") }}
+        {{ form.parent_country_code(class="form-select") }}
+      </div>
+      <div class="col-md-8 mb-3">
+        {{ form.parent_phone.label(class="form-label") }}
+        {{ form.parent_phone(class="form-control") }}
+      </div>
+    </div>
+
+    <!-- Discord + Sibling -->
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        {{ form.discord_id.label(class="form-label") }}
+        {{ form.discord_id(class="form-control") }}
+      </div>
+      <div class="col-md-6 mb-3">
+        {{ form.sibling_reference.label(class="form-label") }}
+        {{ form.sibling_reference(class="form-control") }}
+      </div>
+    </div>
+
+    <!-- Subject -->
+    <div class="mb-3">
+      {{ form.learning_subject.label(class="form-label") }}
+      {{ form.learning_subject(class="form-control") }}
+    </div>
+
+    <!-- Fee -->
+    <div class="mb-3">
+      {{ form.fee_per_month.label(class="form-label") }}
+      {{ form.fee_per_month(class="form-control") }}
+    </div>
+
+    <!-- Notes -->
+    <div class="mb-3">
+      {{ form.notes.label(class="form-label") }}
+      {{ form.notes(class="form-control", rows=3) }}
+    </div>
+
+    <button type="submit" class="btn btn-success">Submit</button>
+  </form>
+</div>
+{% endblock %}

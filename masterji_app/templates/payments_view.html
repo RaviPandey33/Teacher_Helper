@@ -1,0 +1,47 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="container mt-5">
+  <h3>View Past Month Payments</h3>
+
+  <form method="POST" class="row g-3">
+    {{ form.hidden_tag() }}
+    <div class="col-md-4">
+      {{ form.month.label }}
+      {{ form.month(class="form-control", type="month") }}
+    </div>
+    <div class="col-md-2 d-flex align-items-end">
+      <button type="submit" class="btn btn-primary">🔍 View</button>
+    </div>
+  </form>
+
+  {% if selected_month and payment_data %}
+    <h5 class="mt-4">Payments for: <strong>{{ selected_month }}</strong></h5>
+
+    <table class="table table-striped mt-3">
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for student in students %}
+        {% set status = payment_data.get(student.id, 'Unpaid') %}
+        <tr>
+          <td>{{ student.name }}</td>
+          <td>
+            <span class="badge {% if status == 'Paid' %}bg-success{% else %}bg-danger{% endif %}">
+              {{ status }}
+            </span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% elif selected_month %}
+    <div class="alert alert-warning mt-3">
+      No payment data found for <strong>{{ selected_month }}</strong>.
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

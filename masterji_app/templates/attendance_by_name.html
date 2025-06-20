@@ -1,0 +1,71 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="container mt-5">
+  <h3 class="mb-4 text-center">Attendance by Name</h3>
+
+  <form method="POST">
+    {{ form.hidden_tag() }}
+
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label for="student_query" class="form-label">Search Student</label>
+        <input type="text" id="student_query" name="student_query" class="form-control" placeholder="Type name, email or phone" list="studentSuggestions" required>
+        <datalist id="studentSuggestions">
+          {% for student in all_students %}
+          <option value="{{ student.name }} ({{ student.email or student.phone }})">
+          {% endfor %}
+        </datalist>
+      </div>
+      <div class="col-md-4">
+        <label for="month" class="form-label">Select Month</label>
+        <input type="month" id="month" name="month" value="{{ selected_month or '' }}" class="form-control" required>
+      </div>
+      <div class="col-md-2 d-flex align-items-end">
+        <button type="submit" class="btn btn-primary w-100">🔍 View</button>
+      </div>
+    </div>
+  </form>
+
+  {% if student %}
+    <div id="attendanceSection">
+      <div id="copy-target">
+        <h5 class="mt-4">Attendance for: {{ student.name }}</h5>
+        {% if selected_month %}
+          <p><strong>Month:</strong> {{ selected_month | datetimeformat('%B %Y') }}</p>
+        {% endif %}
+        <ul class="list-group mt-3">
+          {% for entry in attendance_data %}
+            <li class="list-group-item d-flex justify-content-between">
+              {{ entry.date.strftime('%d %B %Y') }} -
+              {% if entry.status == 'Present' %}
+                ✅ Present
+              {% else %}
+                ❌ Absent
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="mt-4 d-flex gap-2">
+        <button class="btn btn-outline-secondary" onclick="copyToClipboard()">📋 Copy to Clipboard</button>
+        <button class="btn btn-outline-dark" onclick="window.print()">🖨️ Print / Save PDF</button>
+      </div>
+    </div>
+  {% endif %}
+</div>
+
+<script>
+function copyToClipboard() {
+  const section = document.getElementById("copy-target");
+  if (!section) return;
+
+  const text = section.innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    alert("Attendance copied to clipboard!");
+  }).catch(err => {
+    alert("Failed to copy: " + err);
+  });
+}
+</script>
+{% endblock %}

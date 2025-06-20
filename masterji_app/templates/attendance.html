@@ -1,0 +1,63 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="container mt-5">
+  <h3>Mark Attendance</h3>
+  <form method="POST">
+    {{ form.hidden_tag() }}
+    <div class="mb-3">
+      {{ form.date.label }}
+      {{ form.date(class="form-control") }}
+    </div>
+
+    
+
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for student in students %}
+        {% set status = attendance_data[student.id] if student.id in attendance_data else '' %}
+        <tr>
+          <td>{{ student.name }}</td>
+          <td>
+            <select name="status_{{ student.id }}"
+                    class="form-select status-dropdown"
+                    autocomplete="off"
+                    onchange="updateStatusColor(this)">
+              <option value="" {% if status == '' %}selected{% endif %}>Choose</option>
+              <option value="Present" {% if status == 'Present' %}selected{% endif %}>Present</option>
+              <option value="Absent" {% if status == 'Absent' %}selected{% endif %}>Absent</option>
+            </select>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <button type="submit" class="btn btn-primary">💾 Save Attendance</button>
+  </form>
+</div>
+
+<!-- ✅ JavaScript for dynamic select styling -->
+<script>
+  function updateStatusColor(selectElement) {
+    selectElement.classList.remove("bg-success", "bg-danger", "text-white");
+    if (selectElement.value === "Present") {
+      selectElement.classList.add("bg-success", "text-white");
+    } else if (selectElement.value === "Absent") {
+      selectElement.classList.add("bg-danger", "text-white");
+    }
+  }
+
+  // Apply styling on page load
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.status-dropdown').forEach(function (dropdown) {
+      updateStatusColor(dropdown);
+    });
+  });
+</script>
+{% endblock %}

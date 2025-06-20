@@ -1,0 +1,65 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="container mt-5">
+  <h3>Update Current Month Payments</h3>
+
+  <form method="POST">
+    {{ form.hidden_tag() }}
+
+    <div class="mb-3">
+      {{ form.month.label }}
+      {{ form.month(class="form-control", type="month") }}
+      <small class="text-muted">Updating records for: <strong>{{ selected_month }}</strong></small>
+    </div>
+
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for student in students %}
+        {% set status = payment_data.get(student.id, 'Unpaid') %}
+        <tr>
+          <td>{{ student.name }}</td>
+          <td>
+            <select name="status_{{ student.id }}"
+  class="form-select status-dropdown"
+  data-status="{{ payment_data.get(student.id, 'Unpaid') }}"
+  onchange="updatePaymentColor(this)">
+  <option value="Unpaid" {% if payment_data.get(student.id) != 'Paid' %}selected{% endif %}>Unpaid</option>
+  <option value="Paid" {% if payment_data.get(student.id) == 'Paid' %}selected{% endif %}>Paid</option>
+</select>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <button type="submit" class="btn btn-success mt-3">💾 Save Payments</button>
+  </form>
+</div>
+
+
+
+<script>
+  function updatePaymentColor(selectElement) {
+    selectElement.classList.remove("bg-success", "bg-danger", "text-white");
+    if (selectElement.value === "Paid") {
+      selectElement.classList.add("bg-success", "text-white");
+    } else if (selectElement.value === "Unpaid") {
+      selectElement.classList.add("bg-danger", "text-white");
+    }
+  }
+
+  // Automatically apply color on page load
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.status-dropdown').forEach(function (dropdown) {
+      updatePaymentColor(dropdown);
+    });
+  });
+</script>
+
+{% endblock %}

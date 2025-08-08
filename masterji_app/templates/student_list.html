@@ -45,6 +45,11 @@
             View Details
           </button>
 
+          <!-- ✅ Edit Button -->
+          <a href="{{ url_for('admin.edit_student', student_id=student.id) }}" class="btn btn-sm btn-secondary mb-1">
+            Edit
+          </a>
+
           <!-- Modal -->
           <div class="modal fade" id="studentModal{{ student.id }}" tabindex="-1" aria-labelledby="modalLabel{{ student.id }}" aria-hidden="true">
             <div class="modal-dialog modal-dialog-scrollable">
@@ -59,6 +64,22 @@
                   <p><strong>Subject:</strong> {{ student.learning_subject }}</p>
                   <p><strong>Gender:</strong> {{ student.gender or 'N/A' }}</p>
                   <p><strong>Residing Country:</strong> {{ student.residing_country or 'N/A' }}</p>
+
+                  {% if student.zoom_link %}
+                  <p><strong>Zoom Link:</strong>
+                    <a href="{{ student.zoom_link }}" target="_blank">Join Meeting</a>
+                  </p>
+                  <p><strong>Zoom Password:</strong>
+                    {{ student.zoom_password if student.zoom_password else 'Not set' }}
+                  </p>
+                  <button class="btn btn-sm btn-outline-primary mb-3"
+                          onclick="copyZoomDetails('{{ student.zoom_link }}', '{{ student.zoom_password }}')">
+                    📋 Copy Zoom Link + Password
+                  </button>
+                  {% else %}
+                    <p><strong>Zoom Link:</strong> Not set</p>
+                  {% endif %}
+
                   <hr>
                   <p><strong>Parent Name:</strong> {{ student.parent_name }}</p>
                   <p><strong>Parent Email:</strong> {{ student.parent_email }}</p>
@@ -67,6 +88,46 @@
                   <p><strong>Sibling Reference:</strong> {{ student.sibling_reference }}</p>
                   <p><strong>Fee per Month:</strong> ${{ student.fee_per_month }}</p>
                   <p><strong>Notes:</strong> {{ student.notes }}</p>
+
+                  <hr>
+                  <p><strong>Date of Birth:</strong> {{ student.date_of_birth.strftime('%Y-%m-%d') if student.date_of_birth else 'N/A' }}</p>
+                  <p><strong>Grade:</strong> {{ student.grade }}</p>
+                  <p><strong>School Name:</strong> {{ student.school_name }}</p>
+                  <p><strong>Hobbies:</strong> {{ student.hobbies }}</p>
+                  <p><strong>Start Date:</strong> {{ student.start_date.strftime('%Y-%m-%d') if student.start_date else 'N/A' }}</p>
+                  <p><strong>End Date:</strong> {{ student.end_date.strftime('%Y-%m-%d') if student.end_date else 'N/A' }}</p>
+
+                  <hr>
+                  <p><strong>Classes/Week:</strong> {{ student.classes_per_week }}</p>
+                  <p><strong>Timezone:</strong> {{ student.timezone }}</p>
+
+                 {% if student.class_time_raw %}
+                  <p><strong>Class Times:</strong></p>
+                  <ul>
+                    {% set schedule = student.class_time_raw | safe | fromjson %}
+                    {% for entry in schedule %}
+                      {% if entry.hour is defined and entry.minute is defined and entry.am_pm is defined %}
+                        {% if entry.days is defined and entry.days|length > 0 %}
+                          <li>{{ entry.days[0] }} at {{ "%02d"|format(entry.hour|int) }}:{{ "%02d"|format(entry.minute|int) }} {{ entry.am_pm }}</li>
+                        {% else %}
+                          <li>at {{ "%02d"|format(entry.hour|int) }}:{{ "%02d"|format(entry.minute|int) }} {{ entry.am_pm }}</li>
+                        {% endif %}
+                      {% else %}
+                        <li><em>⚠️ Invalid class time entry</em></li>
+                      {% endif %}
+                    {% endfor %}
+                  </ul>
+                {% endif %}
+
+
+
+
+
+
+                  <hr>
+                  <p><strong>Future College:</strong> {{ student.future_college }}</p>
+                  <p><strong>Stream:</strong> {{ student.future_stream }}</p>
+                  <p><strong>Career Interests:</strong> {{ student.career_interest }}</p>
                 </div>
                 <div class="modal-footer">
                   <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

@@ -1,0 +1,18 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="container mt-4">
+  <h3>📝 Comments for {{ student.name }}</h3>
+  {% if comments %}
+    <ul class="list-group">
+      {% for comment in comments %}
+        <li class="list-group-item">
+          <small class="text-muted">{{ comment.created_at.strftime('%Y-%m-%d %I:%M %p') }}</small><br>
+          {{ comment.content }}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="text-muted">No comments found for this student.</p>
+  {% endif %}
+</div>
+{% endblock %}

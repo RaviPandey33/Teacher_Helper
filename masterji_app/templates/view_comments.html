@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h3 class="mb-4">📝 Comments for {{ student.name }}</h3>
+
+  {% if comments %}
+    <ul class="list-group">
+      {% for comment in comments %}
+        <li class="list-group-item">
+          <div class="d-flex justify-content-between">
+            <div>
+              <strong>{{ comment.created_at.strftime('%d %b %Y, %I:%M %p') }}</strong><br>
+              {{ comment.comment }}
+            </div>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="text-muted">No comments added for this student yet.</p>
+  {% endif %}
+
+  <a href="{{ url_for('admin.class_schedule') }}" class="btn btn-secondary mt-3">← Back to Schedule</a>
+</div>
+{% endblock %}

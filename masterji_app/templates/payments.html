@@ -1,0 +1,124 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-3">📨 Send Payment Links - {{ month }}</h2>
+
+    <form id="send-links-form">
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th><input type="checkbox" id="select-all"></th>
+                    <th>S.No</th>
+                    <th>Student Name</th>
+                    <th>Fee (USD)</th>
+                    <th>Parent Email</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in students %}
+                {% set status = statuses.get(s.id) %}
+                <tr>
+                    <td>
+                        <input type="checkbox" class="student-check" data-id="{{ s.id }}"
+                            {% if status and status.link_sent %}disabled{% endif %}>
+                    </td>
+                    <td>{{ loop.index }}</td>
+                    <td class="student-name">{{ s.name }}</td>
+                    <td><input type="number" class="form-control amount" value="{{ s.fee_per_month }}" step="0.01" min="0"></td>
+                    <td class="student-email">{{ s.parent_email }}</td>
+                    <td>
+                        {% if status %}
+                            {% if status.payment_done %}
+                                <span class="badge bg-success">✅ Paid</span>
+                            {% elif status.link_sent %}
+                                <span class="badge bg-primary">📤 Link Sent</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Not Sent</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="badge bg-secondary">Not Sent</span>
+                        {% endif %}
+                        <button type="button" class="btn btn-sm btn-outline-info copy-details-btn"
+                            data-name="{{ s.name }}"
+                            data-month="{{ month }}"
+                            data-present="{{ status.present_count if status else 0 }}"
+                            data-absent="{{ status.absent_count if status else 0 }}"
+                            data-dues="{{ status.previous_due if status else 0 }}">
+                            📋 Copy Details
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <button type="submit" class="btn btn-success">Send Payment Links</button>
+    </form>
+</div>
+
+<script>
+document.getElementById('select-all').onclick = function () {
+    document.querySelectorAll('.student-check:not(:disabled)').forEach(cb => cb.checked = this.checked);
+};
+
+document.getElementById('send-links-form').onsubmit = async function (e) {
+    e.preventDefault();
+
+    const students = [];
+    document.querySelectorAll('tbody tr').forEach((row) => {
+        const cb = row.querySelector('.student-check');
+        if (cb.checked && !cb.disabled) {
+            const name = row.querySelector('.student-name').innerText;
+            const email = row.querySelector('.student-email').innerText;
+            const amount = parseFloat(row.querySelector('.amount').value);
+
+            students.push({
+                id: cb.dataset.id,
+                name: name,
+                email: email,
+                amount: amount
+            });
+        }
+    });
+
+    if (students.length === 0) {
+        alert("Please select at least one student.");
+        return;
+    }
+
+    const res = await fetch(window.location.href, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ students })
+    });
+
+    const result = await res.json();
+
+    if (result.status === 'success') {
+        alert("✅ Payment links sent successfully!");
+        location.reload();
+    } else {
+        alert("❌ Something went wrong. Please try again.");
+    }
+};
+
+// ✅ Copy Details to Clipboard
+document.addEventListener('click', function (e) {
+    if (e.target.classList.contains('copy-details-btn')) {
+        const name = e.target.dataset.name;
+        const month = e.target.dataset.month;
+        const present = e.target.dataset.present;
+        const absent = e.target.dataset.absent;
+        const dues = parseFloat(e.target.dataset.dues || "0").toFixed(2);
+
+        const summary = `🧾 Payment Summary\nMonth: ${month}\n✅ Present: ${present}\n❌ Absent: ${absent}\nPrevious Dues: $${dues}`;
+
+        navigator.clipboard.writeText(summary)
+            .then(() => alert("📋 Class details copied to clipboard!"))
+            .catch(() => alert("❌ Failed to copy"));
+    }
+});
+</script>
+{% endblock %}

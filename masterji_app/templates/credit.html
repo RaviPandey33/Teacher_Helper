@@ -1,0 +1,57 @@
+{# templates/credits.html #}
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">🎯 Student Credits</h2>
+    <table class="table table-bordered">
+        <thead class="thead-light">
+            <tr>
+                <th>Name</th>
+                <th>Parent Email</th>
+                <th>Credits</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in students %}
+            <tr>
+                <td>{{ student.name }}</td>
+                <td>{{ student.parent_email }}</td>
+                <td id="credit-{{ student.id }}">{{ student.reschedule_credits }}</td>
+                <td>
+                    <button class="btn btn-sm btn-success" onclick="updateCredit({{ student.id }}, 'increase')">+</button>
+                    <button class="btn btn-sm btn-warning" onclick="updateCredit({{ student.id }}, 'decrease')">-</button>
+                    <button class="btn btn-sm btn-danger" onclick="confirmReset({{ student.id }})">Reset</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+function updateCredit(studentId, action) {
+    fetch('/attendance/update-credit', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ id: studentId, action: action })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById(`credit-${studentId}`).innerText = data.new_credit;
+        } else {
+            alert('Failed to update credit.');
+        }
+    });
+}
+
+function confirmReset(studentId) {
+    if (confirm('Are you sure you want to reset credits to 0?')) {
+        updateCredit(studentId, 'reset');
+    }
+}
+</script>
+{% endblock %}

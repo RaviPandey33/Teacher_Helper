@@ -1,0 +1,326 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4>📅 Weekly Class Schedule</h4>
+    <div>
+      <label class="form-check-label me-2">Timezone:</label>
+      <div class="btn-group" role="group" aria-label="Timezone Toggle">
+        <a href="{{ url_for('admin.class_schedule', tz='PST') }}"
+           class="btn btn-sm btn-outline-primary {% if tz_choice == 'PST' %}active{% endif %}">PST</a>
+        <a href="{{ url_for('admin.class_schedule', tz='IST') }}"
+           class="btn btn-sm btn-outline-primary {% if tz_choice == 'IST' %}active{% endif %}">IST</a>
+      </div>
+      <div class="mt-2">
+        <div class="btn-group" role="group" aria-label="Week Navigation">
+          <a href="{{ url_for('admin.class_schedule', tz=tz_choice, week=week_offset - 1) }}"
+            class="btn btn-sm btn-outline-secondary">⬅️ Previous Week</a>
+          <a href="{{ url_for('admin.class_schedule', tz=tz_choice, week=0) }}"
+            class="btn btn-sm btn-outline-secondary {% if week_offset == 0 %}active{% endif %}">This Week</a>
+          <a href="{{ url_for('admin.class_schedule', tz=tz_choice, week=week_offset + 1) }}"
+            class="btn btn-sm btn-outline-secondary">Next Week ➡️</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-light p-3 rounded">
+    <div class="row g-3">
+      {% for day in ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] %}
+      <div class="col-md-3">
+        <div class="card h-100 shadow-sm {% if current_day == day %}border-primary bg-primary bg-opacity-25{% endif %}">
+          <div class="card-header {% if current_day == day %}bg-primary text-white{% else %}bg-danger bg-opacity-10{% endif %} fw-bold text-center">
+            {{ day }} <span class="text-muted small">({{ day_dates[day] }})</span>
+          </div>
+          <div class="card-body">
+            {% if schedule.get(day) %}
+              {% for entry in schedule[day] %}
+                <div class="d-grid mb-2">
+                  <div class="d-flex align-items-center justify-content-between gap-1 mb-2">
+                    <div class="flex-grow-1">
+                      <a href="{{ entry.zoom_link }}" target="_blank"
+                         class="btn btn-outline-primary btn-sm w-100 text-start d-flex align-items-center justify-content-between">
+                        <span>
+  <span class="badge bg-info text-dark me-2">
+    {{ entry.student.reschedule_credits or 0 }}
+  </span>
+  <span class="
+  {% if entry.status == 'Absent' %}
+    text-danger fw-bold
+  {% elif entry.status == 'Present' %}
+    text-success fw-bold
+  {% elif entry.is_skipped %}
+    text-muted text-decoration-line-through
+  {% endif %}
+">
+  {{ entry.name }}
+</span>
+
+</span>
+
+                        <span class="ms-2 text-muted small">{{ entry.time }}</span>
+                      </a>
+                    </div>
+                   <button class="btn btn-sm btn-success"
+                            onclick="markAttendance('{{ entry.student_id }}', 'Present', {{ entry.is_temp_class|lower }}, '{{ day_dates[day] }}')">+</button>
+                   
+                            <button class="btn btn-sm btn-danger"
+        onclick="markAttendance('{{ entry.student_id }}', 'Absent', {{ entry.is_temp_class|lower }}, '{{ day_dates[day] }}')">−</button>
+
+<button class="btn btn-sm btn-warning" onclick="openCommentModal('{{ entry.student_id }}')">📝</button>
+
+             </div>
+                </div>
+              {% endfor %}
+            {% else %}
+              <p class="text-muted text-center small">No classes</p>
+            {% endif %}
+
+            <div class="text-center mt-3">
+              <button class="btn btn-sm btn-outline-success"
+                      onclick="openAddClassModal('{{ day }}')">➕ Add Class</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- ✅ Modal for Add Class -->
+<div class="modal fade" id="addClassModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="addClassForm">
+        <div class="modal-header">
+          <h5 class="modal-title">Add Temporary Class</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="selected-day" name="day">
+          <div class="mb-3">
+            <label for="student" class="form-label">Student</label>
+            <select class="form-select" id="student" name="student_id" required>
+              <option value="">-- Select Student --</option>
+              {% for s in students %}
+                <option value="{{ s.id }}">{{ s.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="time" class="form-label">Time (PST)</label>
+            <input type="time" class="form-control" id="time" name="time" required>
+          </div>
+          <div class="mb-3">
+            <label for="date" class="form-label">Select Exact Date</label>
+            <input type="date" class="form-control" id="date" name="date" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-success">Add</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Comment Modal -->
+<div class="modal fade" id="commentModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form id="commentForm" class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Comment</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="comment-student-id">
+        <div class="mb-3">
+          <label for="comment-text" class="form-label">Comment</label>
+          <textarea id="comment-text" class="form-control" rows="3" required></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-success">Submit</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ✅ Select2 + Attendance Script -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+function openAddClassModal(day) {
+  document.getElementById('selected-day').value = day;
+
+  const headers = document.querySelectorAll('.card-header');
+  headers.forEach(header => {
+    if (header.textContent.includes(day)) {
+      const match = header.textContent.match(/\(([^)]+)\)/);
+      if (match) {
+        const parsedDate = new Date(match[1]);
+        document.getElementById('date').value = parsedDate.toISOString().split('T')[0];
+      }
+    }
+  });
+
+  const modal = new bootstrap.Modal(document.getElementById('addClassModal'));
+  modal.show();
+  setTimeout(() => {
+    $('#student').select2({ dropdownParent: $('#addClassModal') });
+  }, 100);
+}
+
+document.getElementById('addClassForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  const formData = {
+    day: document.getElementById('selected-day').value,
+    student_id: document.getElementById('student').value,
+    time: document.getElementById('time').value,
+    date: document.getElementById('date').value
+  };
+
+  fetch('/admin/add-temp-class', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(formData)
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      alert('✅ Class added');
+      location.reload();
+    } else {
+      alert('⚠️ ' + data.message);
+    }
+  })
+  .catch(() => alert('❌ Error adding class'));
+});
+
+function markAttendance(studentId, status, isTempClass = false) {
+  // ⏱ Get the date from the DOM
+  let entryElem = event.target.closest('.d-flex');
+  let cardHeader = entryElem.closest('.card').querySelector('.card-header').textContent;
+
+  // Extract date like "10 July 2025"
+  let match = cardHeader.match(/\(([^)]+)\)/);
+  if (!match) {
+    alert("❌ Couldn't find date");
+    return;
+  }
+
+  let dateStr = match[1]; // e.g. "10 July 2025"
+  let parsedDate = new Date(dateStr);
+  if (isNaN(parsedDate)) {
+    alert("❌ Couldn't parse date");
+    return;
+  }
+
+  let yyyyMmDd = parsedDate.toISOString().split('T')[0]; // ✅ Correct format: "YYYY-MM-DD"
+
+  // Send AJAX POST request
+  fetch('/admin/attendance/quick-mark', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      student_id: studentId,
+      status: status,
+      date: yyyyMmDd,
+      is_temp_class: isTempClass // ✅ Important for cancellation logic
+    })
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        alert(`✅ ${data.message}`);
+        location.reload();
+      } else {
+        alert(`⚠️ ${data.message}`);
+      }
+    })
+    .catch(() => alert('❌ Error updating attendance'));
+}
+
+function cancelTempClass(tempClassId) {
+  fetch('/admin/cancel-temp-class', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ class_id: tempClassId })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      alert("✅ Temporary class cancelled");
+      location.reload();
+    } else {
+      alert("⚠️ " + data.message);
+    }
+  })
+  .catch(() => alert("❌ Error cancelling temp class"));
+}
+
+function skipRegularClass(studentId, dateStr) {
+  // Convert date to YYYY-MM-DD just in case
+  const parsedDate = new Date(dateStr);
+  if (isNaN(parsedDate)) {
+    alert("❌ Invalid date format");
+    return;
+  }
+  const formattedDate = parsedDate.toISOString().split('T')[0];
+
+  fetch('/admin/skip-regular-class', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ student_id: studentId, date: formattedDate })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      alert("✅ Regular class skipped for that day");
+      location.reload();
+    } else {
+      alert("⚠️ " + data.message);
+    }
+  })
+  .catch(() => alert("❌ Error skipping class"));
+}
+
+function openCommentModal(studentId) {
+  document.getElementById('comment-student-id').value = studentId;
+  document.getElementById('comment-text').value = '';
+  const modal = new bootstrap.Modal(document.getElementById('commentModal'));
+  modal.show();
+}
+
+document.getElementById("commentForm").addEventListener("submit", function (e) {
+  e.preventDefault();
+
+  const studentId = document.getElementById('comment-student-id').value;
+  const comment = document.getElementById('comment-text').value;
+
+  fetch('/admin/add-comment', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ student_id: studentId, comment: comment })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      alert("✅ Comment saved");
+      const modal = bootstrap.Modal.getInstance(document.getElementById('commentModal'));
+      modal.hide();
+    } else {
+      alert("⚠️ " + data.message);
+    }
+  })
+  .catch(() => alert("❌ Failed to save comment"));
+});
+
+</script>
+
+{% endblock %}

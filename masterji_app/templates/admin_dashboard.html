@@ -1,11 +1,19 @@
 {% extends 'layout.html' %}
 {% block content %}
 <div class="container mt-5">
-  <h2>Welcome, {{ user.username }} ({{ user.role }})</h2>
+  <h2>Welcome, {{ current_user.username }}</h2>
   <p>This is your admin dashboard.</p>
 
-  <a href="{{ url_for('admin.add_student') }}" class="btn btn-primary mt-3">➕ Add New Student</a>
-  <a href="{{ url_for('admin.student_list') }}" class="btn btn-outline-secondary mt-3">📋 View All Students</a>
+  <a href="{{ url_for('admin.add_student') }}" class="btn btn-primary me-2">
+    ➕ Add New Student
+  </a>
 
+  <a href="{{ url_for('admin.student_list') }}" class="btn btn-outline-secondary me-2">
+    📋 View All Students
+  </a>
+
+  <a href="{{ url_for('admin.select_student_for_comments') }}" class="btn btn-warning ms-2">
+    🕒 View Comments Timeline
+  </a>
 </div>
 {% endblock %}

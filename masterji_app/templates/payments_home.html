@@ -7,5 +7,8 @@
   <a href="{{ url_for('admin.update_current_payments') }}" class="btn btn-primary btn-lg m-2">Update Current Month</a>
   <a href="{{ url_for('admin.view_past_payments') }}" class="btn btn-outline-secondary btn-lg m-2">View Past Payments</a>
   <a href="{{ url_for('admin.view_payment_summary') }}" class="btn btn-outline-dark">📊 View 5-Month Summary</a>
+  <a href="{{ url_for('payments.send_payment_links') }}" class="btn btn-warning mt-2">📨 Send Payment Links</a>
+
+
 </div>
 {% endblock %}

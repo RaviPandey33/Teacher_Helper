@@ -1,0 +1,73 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container py-4">
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h4 class="mb-4"><i class="fas fa-graduation-cap"></i> Manage Student Credits</h4>
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Parent Email</th>
+                            <th>Credits</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        <tr>
+                            <td>{{ student.name }}</td>
+                            <td>{{ student.parent_email }}</td>
+                            <td id="credit-{{ student.id }}">{{ student.reschedule_credits }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-success me-1" onclick="confirmUpdate({{ student.id }}, 1)">+</button>
+                                <button class="btn btn-sm btn-warning me-1" onclick="confirmUpdate({{ student.id }}, -1)">−</button>
+                                <button class="btn btn-sm btn-danger" onclick="confirmReset({{ student.id }})">Reset</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateCredits(studentId, delta) {
+    fetch(`/admin/update_credit/${studentId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ delta: delta })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`Request failed: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        document.getElementById(`credit-${studentId}`).innerText = data.credits;
+    })
+    .catch(error => {
+        alert("Something went wrong: " + error.message);
+    });
+}
+
+function confirmUpdate(studentId, delta) {
+    let msg = delta > 0 ? "increase" : "decrease";
+    if (confirm(`Are you sure you want to ${msg} the credit?`)) {
+        updateCredits(studentId, delta);
+    }
+}
+
+function confirmReset(studentId) {
+    if (confirm("Are you sure you want to reset this student's credits to 0?")) {
+        updateCredits(studentId, "reset");
+    }
+}
+</script>
+{% endblock %}

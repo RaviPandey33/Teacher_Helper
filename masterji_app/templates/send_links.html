@@ -1,0 +1,61 @@
+<h3>Send Payment Links - {{ month }}</h3>
+<form id="send-links-form">
+    <table class="table">
+        <thead>
+            <tr>
+                <th><input type="checkbox" id="select-all"></th>
+                <th>S.No</th>
+                <th>Name</th>
+                <th>Amount (USD)</th>
+                <th>Email</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for i, s in enumerate(students, 1) %}
+            <tr>
+                <td><input type="checkbox" class="student-check" data-id="{{ s.id }}"></td>
+                <td>{{ i }}</td>
+                <td>{{ s.name }}</td>
+                <td><input type="number" class="amount" value="{{ s.fees_usd }}"></td>
+                <td>{{ s.parent_email }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <button type="submit" class="btn btn-success">Send Payment Links</button>
+</form>
+
+<script>
+document.getElementById('select-all').onclick = function() {
+    document.querySelectorAll('.student-check').forEach(cb => cb.checked = this.checked);
+};
+
+document.getElementById('send-links-form').onsubmit = async function(e) {
+    e.preventDefault();
+
+    const rows = document.querySelectorAll('tbody tr');
+    const students = [];
+
+    rows.forEach((row, index) => {
+        const cb = row.querySelector('.student-check');
+        if (cb.checked) {
+            students.push({
+                id: cb.dataset.id,
+                name: row.cells[2].innerText,
+                amount: parseFloat(row.querySelector('.amount').value),
+                email: row.cells[4].innerText
+            });
+        }
+    });
+
+    const res = await fetch(window.location.href, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ students })
+    });
+
+    const result = await res.json();
+    alert("Links sent!");
+    console.log(result);
+};
+</script>

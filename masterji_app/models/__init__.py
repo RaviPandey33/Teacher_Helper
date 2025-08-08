@@ -1,3 +1,8 @@
-from flask_sqlalchemy import SQLAlchemy
+from extensions import db  # ✅ First import db
 
-db = SQLAlchemy()
+from .reschedule import TemporaryClass, SkippedClass
+from .payment_status import FeeStatus
+from .student import Student
+from .user import User
+from .attendance import Attendance
+

@@ -1,7 +1,7 @@
 {% extends 'layout.html' %}
 {% block content %}
 <div class="container mt-5" style="max-width: 700px;">
-  <h3>Add New Student</h3>
+  <h3>Edit Student Information</h3>
   {% for field, errors in form.errors.items() %}
     {% for error in errors %}
       <div class="alert alert-danger">
@@ -10,7 +10,7 @@
     {% endfor %}
   {% endfor %}
 
-  <form method="POST" action="{{ url_for('admin.add_student') }}">
+  <form method="POST" action="{{ url_for('admin.edit_student', student_id=student.id) }}">
     {{ form.hidden_tag() }}
 
     <!-- Name -->
@@ -123,7 +123,7 @@
     <div class="row">
       <div class="col-md-6 mb-3">
         {{ form.classes_per_week.label(class="form-label") }}
-        {{ form.classes_per_week(class="form-select", id="classes_per_week") }}
+        {{ form.classes_per_week(class="form-select") }}
       </div>
       <div class="col-md-6 mb-3">
         {{ form.timezone.label(class="form-label") }}
@@ -131,33 +131,29 @@
       </div>
     </div>
 
-    <!-- Class Time Blocks -->
-    <div id="class-times-wrapper">
-      {% for class_time in form.class_times %}
-        {% set idx = loop.index0 %}
-        <div class="class-time-block border rounded p-3 mb-2" data-index="{{ idx }}" style="display: none;">
-          <label><strong>Class Time {{ idx + 1 }}</strong></label>
-          <div class="row">
-            <div class="col-md-4 mb-2">
-              {{ class_time.day.label(class="form-label") }}
-              {{ class_time.day(class="form-select") }}
-            </div>
-            <div class="col-md-2 mb-2">
-              {{ class_time.hour.label(class="form-label") }}
-              {{ class_time.hour(class="form-select") }}
-            </div>
-            <div class="col-md-2 mb-2">
-              {{ class_time.minute.label(class="form-label") }}
-              {{ class_time.minute(class="form-select") }}
-            </div>
-            <div class="col-md-2 mb-2">
-              {{ class_time.am_pm.label(class="form-label") }}
-              {{ class_time.am_pm(class="form-select") }}
-            </div>
+    {% for class_time in form.class_times %}
+      <div class="border rounded p-3 mb-2">
+        <label><strong>Class Time</strong></label>
+        <div class="row">
+          <div class="col-md-5 mb-2">
+            {{ class_time.day.label(class="form-label") }}
+            {{ class_time.day(class="form-control") }}
+          </div>
+          <div class="col-md-2 mb-2">
+            {{ class_time.hour.label(class="form-label") }}
+            {{ class_time.hour(class="form-select") }}
+          </div>
+          <div class="col-md-2 mb-2">
+            {{ class_time.minute.label(class="form-label") }}
+            {{ class_time.minute(class="form-select") }}
+          </div>
+          <div class="col-md-3 mb-2">
+            {{ class_time.am_pm.label(class="form-label") }}
+            {{ class_time.am_pm(class="form-select") }}
           </div>
         </div>
-      {% endfor %}
-    </div>
+      </div>
+    {% endfor %}
 
     <!-- Student Profile -->
     <hr>
@@ -184,7 +180,7 @@
     </div>
     <div class="mb-3">
       {{ form.end_date.label(class="form-label") }}
-      {{ form.end_date(class="form-control", readonly=true) }}
+      {{ form.end_date(class="form-control") }}
     </div>
 
     <!-- Future Academic Tracking -->
@@ -204,25 +200,7 @@
     </div>
 
     <!-- Submit -->
-    <button type="submit" class="btn btn-success">Submit</button>
+    <button type="submit" class="btn btn-success">Update</button>
   </form>
 </div>
-
-<!-- ✅ JS: Dynamically show class time blocks based on selection -->
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const classCountSelect = document.getElementById("classes_per_week");
-    const classBlocks = document.querySelectorAll(".class-time-block");
-
-    function updateVisibleBlocks() {
-      const count = parseInt(classCountSelect.value || 0);
-      classBlocks.forEach((block, idx) => {
-        block.style.display = idx < count ? "block" : "none";
-      });
-    }
-
-    classCountSelect.addEventListener("change", updateVisibleBlocks);
-    updateVisibleBlocks();  // on page load
-  });
-</script>
 {% endblock %}

@@ -1,0 +1,23 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Databases
+*.db
+
+# Virtual environments
+venv/
+.venv/
+masterji_env/
+
+# Environment/config files
+.env
+instance/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# IDE-specific
+.vscode/
+.idea/
